@@ -1,0 +1,118 @@
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: 'citizen' | 'admin';
+  phone?: string;
+  avatar?: string;
+  createdAt: string;
+  accessStatus?: 'active' | 'temporarily_blocked' | 'blacklisted';
+  blockedUntil?: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+}
+
+export interface SOSAlert {
+  _id: string;
+  userId: string;
+  userName: string;
+  userPhone?: string;
+  userEmail?: string;
+  location: {
+    lat: number;
+    lng: number;
+    address?: string;
+  };
+  status: 'active' | 'responding' | 'resolved';
+  createdAt: string;
+  resolvedAt?: string;
+  deliveredAt?: string;
+  acknowledgedAt?: string;
+  responderName?: string;
+  etaMinutes?: number;
+}
+
+export interface CrimeReport {
+  _id: string;
+  userId: string;
+  userName: string;
+  type: 'theft' | 'assault' | 'vandalism' | 'robbery' | 'fraud' | 'harassment' | 'other';
+  title: string;
+  description: string;
+  location: {
+    lat: number;
+    lng: number;
+    address?: string;
+  };
+  crimeLocation?: {
+    lat: number;
+    lng: number;
+    address?: string;
+  };
+  media?: string[];
+  mediaNames?: string[];
+  mediaPaths?: string[];
+  status: 'pending' | 'approved' | 'rejected' | 'investigating' | 'resolved';
+  severity: 'low' | 'medium' | 'high';
+  createdAt: string;
+  statusUpdates?: { status: string; timestamp: string; note?: string }[];
+  resolvedAt?: string;
+  crimeTime?: string;
+  assignedStation?: string;
+  estimatedResolutionTime?: string;
+  adminAction?: { action?: string; note?: string; updatedAt?: string; updatedBy?: string };
+  authenticityScore?: number;
+  authenticityAnalysis?: {
+    score?: number;
+    verdict?: 'genuine' | 'suspicious' | 'likely_fake';
+    reasons?: string[];
+    flags?: string[];
+    analyzed_at?: string;
+  };
+}
+
+export interface EmergencyService {
+  _id: string;
+  name: string;
+  type: 'police' | 'hospital' | 'fire';
+  location: {
+    lat: number;
+    lng: number;
+  };
+  address: string;
+  phone: string;
+  distance?: number;
+}
+
+export interface Notification {
+  _id: string;
+  userId?: string;
+  type: 'sos' | 'crime' | 'system' | 'alert';
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface HeatmapPoint {
+  lat: number;
+  lng: number;
+  intensity: number;
+  type: string;
+  areaName?: string;
+  incidentCount?: number;
+}
+
+export interface DashboardStats {
+  totalReports: number;
+  activeAlerts: number;
+  resolvedCases: number;
+  pendingReports: number;
+  reportsByType: { type: string; count: number }[];
+  reportsByMonth: { month: string; count: number }[];
+  severityDistribution: { severity: string; count: number }[];
+}

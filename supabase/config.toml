@@ -1,0 +1,10 @@
+project_id = "qlajmgfueoqehhqgngeq"
+
+[functions.ai-chat]
+verify_jwt = true
+
+[functions.detect-fake-report]
+verify_jwt = true
+
+[functions.manage-citizen]
+verify_jwt = true
