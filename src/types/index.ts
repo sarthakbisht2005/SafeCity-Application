@@ -91,7 +91,7 @@ export interface EmergencyService {
 export interface Notification {
   _id: string;
   userId?: string;
-  type: 'sos' | 'crime' | 'system' | 'alert';
+  type: 'sos' | 'crime' | 'system' | 'alert' | 'info' | 'warning' | string;
   title: string;
   message: string;
   read: boolean;
