@@ -61,10 +61,10 @@ export default function MyReportsPage() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-8 pb-28 sm:pb-12">
       <div className="container mx-auto px-4 max-w-3xl">
-        <h1 className="text-3xl font-bold mb-2">My Reports</h1>
-        <p className="text-muted-foreground mb-8">Track status updates of your submitted reports</p>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">My Reports</h1>
+        <p className="text-muted-foreground text-sm sm:text-base mb-6 sm:mb-8">Track status updates of your submitted reports</p>
         {loadError && <p role="alert" className="text-sm text-destructive mb-4">{loadError}</p>}
 
         {loading ? (
@@ -72,11 +72,11 @@ export default function MyReportsPage() {
             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : reports.length === 0 ? (
-          <div className="text-center py-20 glass-card rounded-2xl">
-            <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No reports yet</h3>
-            <p className="text-muted-foreground mb-4">Submit a crime report to see it here</p>
-            <button onClick={() => navigate('/report')} className="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium">
+          <div className="text-center py-16 sm:py-20 glass-card rounded-2xl p-6">
+            <FileText className="w-14 h-14 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg sm:text-xl font-semibold mb-2">No reports yet</h3>
+            <p className="text-muted-foreground text-sm mb-4">Submit a crime report to see it here</p>
+            <button onClick={() => navigate('/report')} className="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium text-sm sm:text-base">
               Report a Crime
             </button>
           </div>
@@ -88,7 +88,7 @@ export default function MyReportsPage() {
               return (
                 <motion.div key={r._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                   onClick={() => setSelected(r)}
-                  className="glass-card-hover rounded-xl p-4 flex items-center gap-4 cursor-pointer group">
+                  className="glass-card-hover rounded-xl p-3.5 sm:p-4 flex items-start sm:items-center gap-3 sm:gap-4 cursor-pointer group">
                   <FileText className="w-10 h-10 text-primary shrink-0" />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold truncate">{r.title}</h3>

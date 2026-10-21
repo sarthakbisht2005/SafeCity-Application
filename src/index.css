@@ -150,6 +150,13 @@
   .stat-card:hover::before {
     opacity: 1;
   }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 @keyframes pulse-red {

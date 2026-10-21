@@ -215,35 +215,35 @@ export default function HeatmapPage() {
   }, [filteredPoints]);
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-8 pb-28 sm:pb-12">
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-2">Crime Heatmap</h1>
-        <p className="text-muted-foreground mb-6">Approximate, aggregated reports; new submissions may be unverified</p>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Crime Heatmap</h1>
+        <p className="text-muted-foreground text-sm sm:text-base mb-6">Approximate, aggregated reports; new submissions may be unverified</p>
         {loadError && <p role="alert" className="text-sm text-destructive mb-4">{loadError}</p>}
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="stat-card text-center">
-            <div className="text-2xl font-bold text-primary">{totalIncidents}</div>
-            <div className="text-sm text-muted-foreground">Reports Shown</div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
+          <div className="stat-card p-4 sm:p-6 text-center">
+            <div className="text-2xl sm:text-3xl font-bold text-primary">{totalIncidents}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Reports Shown</div>
           </div>
-          <div className="stat-card text-center">
-            <div className="text-2xl font-bold text-emergency">{highRiskAreas}</div>
-            <div className="text-sm text-muted-foreground">High Report Areas</div>
+          <div className="stat-card p-4 sm:p-6 text-center">
+            <div className="text-2xl sm:text-3xl font-bold text-emergency">{highRiskAreas}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">High Report Areas</div>
           </div>
-          <div className="stat-card text-center">
-            <div className="text-2xl font-bold text-success">{areaStats.length}</div>
-            <div className="text-sm text-muted-foreground">Approximate Areas</div>
+          <div className="stat-card p-4 sm:p-6 text-center">
+            <div className="text-2xl sm:text-3xl font-bold text-success">{areaStats.length}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Approximate Areas</div>
           </div>
         </div>
 
         {/* Filters Row */}
-        <div className="flex flex-wrap items-center gap-4 mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           {/* Crime type filter */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
             {types.map(t => (
               <button key={t} onClick={() => setFilter(t)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium capitalize transition-colors ${
+                className={`px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium capitalize whitespace-nowrap transition-colors shrink-0 ${
                   filter === t ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-accent'
                 }`}>
                 {t}
@@ -352,7 +352,7 @@ export default function HeatmapPage() {
         </div>
 
         {/* Map */}
-        <div ref={mapContainerRef} className="w-full h-[500px] rounded-2xl overflow-hidden glass-card mb-8" />
+        <div ref={mapContainerRef} className="w-full h-[340px] sm:h-[500px] rounded-2xl overflow-hidden glass-card mb-8" />
 
         {/* Aggregate summaries */}
         <div className="grid md:grid-cols-2 gap-4 mb-8">

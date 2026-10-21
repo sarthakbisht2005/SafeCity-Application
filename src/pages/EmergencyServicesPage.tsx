@@ -68,15 +68,15 @@ export default function EmergencyServicesPage() {
   }, [filtered]);
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-8 pb-28 sm:pb-12">
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-2">Nearby Emergency Services</h1>
-        <p className="text-muted-foreground mb-6">Find police, hospitals, and fire stations near you</p>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Nearby Emergency Services</h1>
+        <p className="text-muted-foreground text-sm sm:text-base mb-6">Find police, hospitals, and fire stations near you</p>
 
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-6">
           {['all', 'police', 'hospital', 'fire'].map(t => (
             <button key={t} onClick={() => setFilter(t)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium capitalize transition-colors ${
+              className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium capitalize whitespace-nowrap transition-colors shrink-0 ${
                 filter === t ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-accent'
               }`}>
               {t === 'all' ? 'All' : t}
@@ -85,7 +85,7 @@ export default function EmergencyServicesPage() {
         </div>
 
         {/* Map */}
-        <div ref={mapContainerRef} className="w-full h-[400px] rounded-2xl overflow-hidden glass-card mb-8" />
+        <div ref={mapContainerRef} className="w-full h-[280px] sm:h-[400px] rounded-2xl overflow-hidden glass-card mb-8" />
 
         {/* List */}
         <div className="grid md:grid-cols-2 gap-4">
@@ -94,9 +94,9 @@ export default function EmergencyServicesPage() {
             const Icon = meta.icon;
             return (
               <motion.div key={s._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                className="glass-card-hover rounded-xl p-5 flex items-start gap-4">
-                <div className={`w-12 h-12 rounded-xl ${meta.bg} flex items-center justify-center shrink-0`}>
-                  <Icon className={`w-6 h-6 ${meta.color}`} />
+                className="glass-card-hover rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-start gap-3.5 sm:gap-4">
+                <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl ${meta.bg} flex items-center justify-center shrink-0`}>
+                  <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${meta.color}`} />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold">{s.name}</h3>

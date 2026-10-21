@@ -48,9 +48,9 @@ export default function SOSButton() {
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        className="fixed bottom-6 right-6 z-50 bg-success text-success-foreground px-6 py-3 rounded-full shadow-lg flex items-center gap-2 font-semibold"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 bg-success text-success-foreground px-4 py-2.5 sm:px-6 sm:py-3 rounded-full shadow-lg flex items-center gap-2 font-semibold text-sm sm:text-base"
       >
-        <CheckCircle className="w-5 h-5" />
+        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
         Alert Sent!
       </motion.div>
     );
@@ -61,27 +61,28 @@ export default function SOSButton() {
       onClick={handleSOS}
       disabled={state !== 'idle'}
       whileTap={{ scale: 0.95 }}
-      className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-6 py-3 rounded-full font-bold shadow-2xl transition-all ${
+      aria-label="Send Emergency SOS Alert"
+      className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-full font-bold shadow-2xl transition-all text-sm sm:text-base ${
         state === 'idle'
-          ? 'bg-emergency text-emergency-foreground pulse-emergency hover:scale-105'
+          ? 'bg-emergency text-emergency-foreground pulse-emergency hover:scale-105 active:scale-95'
           : 'bg-emergency/80 text-emergency-foreground cursor-wait'
       }`}
     >
       {state === 'idle' && (
         <>
-          <AlertTriangle className="w-5 h-5" />
+          <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />
           SOS
         </>
       )}
       {state === 'locating' && (
         <>
-          <MapPin className="w-5 h-5 animate-pulse" />
+          <MapPin className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
           Locating...
         </>
       )}
       {state === 'sending' && (
         <>
-          <Loader2 className="w-5 h-5 animate-spin" />
+          <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
           Sending...
         </>
       )}

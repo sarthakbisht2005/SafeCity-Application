@@ -22,33 +22,33 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8 sm:py-16 pb-28 sm:pb-16">
         {/* Hero */}
-        <motion.div initial="hidden" animate="visible" className="text-center max-w-3xl mx-auto mb-20">
-          <motion.p variants={fadeUp} custom={0} className="text-primary font-semibold mb-4 flex items-center justify-center gap-2">
+        <motion.div initial="hidden" animate="visible" className="text-center max-w-3xl mx-auto mb-14 sm:mb-20">
+          <motion.p variants={fadeUp} custom={0} className="text-primary font-semibold text-sm sm:text-base mb-3 sm:mb-4 flex items-center justify-center gap-2">
             <Zap className="w-4 h-4" /> Protecting Our Communities
           </motion.p>
-          <motion.h1 variants={fadeUp} custom={1} className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+          <motion.h1 variants={fadeUp} custom={1} className="text-3xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
             Your City, <br /> <span className="gradient-text">Safer Together</span>
           </motion.h1>
-          <motion.p variants={fadeUp} custom={2} className="text-lg text-muted-foreground mb-8">
+          <motion.p variants={fadeUp} custom={2} className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 px-2">
             MySafeCity empowers citizens to report crimes, trigger emergency alerts, and stay informed about safety in their neighborhood — all in real time.
           </motion.p>
-          <motion.div variants={fadeUp} custom={3} className="flex flex-wrap justify-center gap-4">
+          <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 max-w-xs sm:max-w-none mx-auto">
             {!isAuthenticated ? (
               <>
                 <button onClick={() => navigate('/register')}
-                  className="px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-semibold text-lg shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow">
+                  className="w-full sm:w-auto px-7 py-3 sm:py-3.5 bg-primary text-primary-foreground rounded-xl font-semibold text-base sm:text-lg shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.99] transition-all">
                   Get Started
                 </button>
                 <button onClick={() => navigate('/login')}
-                  className="px-8 py-3.5 bg-secondary text-secondary-foreground rounded-xl font-semibold text-lg hover:bg-accent transition-colors border border-border/50">
+                  className="w-full sm:w-auto px-7 py-3 sm:py-3.5 bg-secondary text-secondary-foreground rounded-xl font-semibold text-base sm:text-lg hover:bg-accent active:scale-[0.99] transition-all border border-border/50">
                   Sign In
                 </button>
               </>
             ) : (
               <button onClick={() => navigate(user?.role === 'admin' ? '/admin' : '/report')}
-                className="px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-semibold text-lg shadow-lg shadow-primary/25 flex items-center gap-2 hover:shadow-xl hover:shadow-primary/30 transition-shadow">
+                className="w-full sm:w-auto px-7 py-3 sm:py-3.5 bg-primary text-primary-foreground rounded-xl font-semibold text-base sm:text-lg shadow-lg shadow-primary/25 flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.99] transition-all">
                 {user?.role === 'admin' ? 'Go to Dashboard' : 'Report a Crime'}
                 <ArrowRight className="w-5 h-5" />
               </button>

@@ -102,9 +102,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8 sm:py-12">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-        <div className="glass-card rounded-2xl p-8">
+        <div className="glass-card rounded-2xl p-6 sm:p-8">
           <div className="text-center mb-8">
             <Shield className="w-12 h-12 text-primary mx-auto mb-3" />
             <h1 className="text-2xl font-bold">Welcome Back</h1>
@@ -132,18 +132,18 @@ export default function LoginPage() {
           </button>
 
           {/* Mode tabs */}
-          <div className="flex rounded-lg border border-input overflow-hidden mb-6">
-            <button
-              onClick={() => { setMode('phone'); setOtpSent(false); }}
-              className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'phone' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:bg-accent'}`}
-            >
-              <Phone className="w-4 h-4 inline mr-1.5" />Phone
-            </button>
+          <div className="flex rounded-xl border border-input overflow-hidden mb-6 p-0.5 bg-secondary/50">
             <button
               onClick={() => setMode('email')}
-              className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'email' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:bg-accent'}`}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${mode === 'email' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
             >
-              <Mail className="w-4 h-4 inline mr-1.5" />Email
+              <Mail className="w-4 h-4 inline mr-1.5" />Password Login
+            </button>
+            <button
+              onClick={() => { setMode('phone'); setOtpSent(false); }}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${mode === 'phone' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              <Phone className="w-4 h-4 inline mr-1.5" />Phone OTP
             </button>
           </div>
 

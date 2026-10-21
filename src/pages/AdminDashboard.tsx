@@ -323,30 +323,30 @@ export default function AdminDashboard() {
   const resolutionRate = stats.totalReports > 0 ? Math.round((stats.resolvedCases / stats.totalReports) * 100) : 0;
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-8 pb-28 sm:pb-12">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div initial="hidden" animate="visible" className="mb-8">
-          <motion.div variants={fadeUp} custom={0} className="flex items-center justify-between">
+          <motion.div variants={fadeUp} custom={0} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h1 className="text-3xl font-bold">Command Center</h1>
-              <p className="text-muted-foreground">City safety overview · Dehradun</p>
+              <h1 className="text-2xl sm:text-3xl font-bold">Command Center</h1>
+              <p className="text-muted-foreground text-sm sm:text-base">City safety overview · Dehradun</p>
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
               <Activity className="w-4 h-4" /> Refreshes every 30 seconds
             </div>
           </motion.div>
         </motion.div>
 
         {/* Stat Cards */}
-        <motion.div initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <motion.div initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
           {statCards.map((s, i) => (
-            <motion.div key={s.label} variants={fadeUp} custom={i + 1} className={`stat-card bg-gradient-to-br ${s.bgGrad}`}>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-muted-foreground">{s.label}</span>
-                <s.icon className={`w-5 h-5 ${s.color}`} />
+            <motion.div key={s.label} variants={fadeUp} custom={i + 1} className={`stat-card p-4 sm:p-6 bg-gradient-to-br ${s.bgGrad}`}>
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <span className="text-xs sm:text-sm text-muted-foreground">{s.label}</span>
+                <s.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${s.color}`} />
               </div>
-              <div className="text-3xl font-bold mb-1">{s.value.toLocaleString()}</div>
+              <div className="text-2xl sm:text-3xl font-bold mb-1">{s.value.toLocaleString()}</div>
             </motion.div>
           ))}
         </motion.div>
@@ -472,23 +472,27 @@ export default function AdminDashboard() {
             {alerts.map((a, i) => (
               <motion.div key={a._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                 onClick={() => setSelectedAlert(a)}
-                className="glass-card-hover rounded-xl p-4 flex items-center gap-4 cursor-pointer">
-                <AlertTriangle className={`w-6 h-6 shrink-0 ${a.status === 'active' ? 'text-emergency animate-pulse' : a.status === 'responding' ? 'text-warning' : 'text-success'}`} />
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold">{a.userName}</p>
-                  <p className="text-sm text-muted-foreground">{a.location.address} · {new Date(a.createdAt).toLocaleString()}</p>
-                  {a.userPhone && <p className="text-xs text-muted-foreground mt-0.5"><Phone className="w-3 h-3 inline mr-1" />{a.userPhone}</p>}
+                className="glass-card-hover rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 cursor-pointer">
+                <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                  <AlertTriangle className={`w-6 h-6 shrink-0 mt-0.5 sm:mt-0 ${a.status === 'active' ? 'text-emergency animate-pulse' : a.status === 'responding' ? 'text-warning' : 'text-success'}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm sm:text-base">{a.userName}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">{a.location.address} · {new Date(a.createdAt).toLocaleString()}</p>
+                    {a.userPhone && <p className="text-xs text-muted-foreground mt-0.5"><Phone className="w-3 h-3 inline mr-1" />{a.userPhone}</p>}
+                  </div>
                 </div>
-                <span className={`text-xs font-semibold px-3 py-1 rounded-full capitalize ${
-                  a.status === 'active' ? 'bg-emergency/10 text-emergency' : a.status === 'responding' ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success'
-                }`}>{a.status}</span>
-                <div onClick={e => e.stopPropagation()} className="flex gap-2">
-                  {a.status === 'active' && (
-                    <button onClick={() => handleAlertAction(a._id, 'responding')} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-semibold hover:opacity-90 transition-all active:scale-95">Respond</button>
-                  )}
-                  {a.status === 'responding' && (
-                    <button onClick={() => handleAlertAction(a._id, 'resolved')} className="px-4 py-2 bg-success text-success-foreground rounded-lg text-xs font-semibold hover:opacity-90 transition-all active:scale-95">Resolve</button>
-                  )}
+                <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                  <span className={`text-xs font-semibold px-3 py-1 rounded-full capitalize ${
+                    a.status === 'active' ? 'bg-emergency/10 text-emergency' : a.status === 'responding' ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success'
+                  }`}>{a.status}</span>
+                  <div onClick={e => e.stopPropagation()} className="flex gap-2">
+                    {a.status === 'active' && (
+                      <button onClick={() => handleAlertAction(a._id, 'responding')} className="px-3 sm:px-4 py-1.5 sm:py-2 bg-primary text-primary-foreground rounded-lg text-xs font-semibold hover:opacity-90 transition-all active:scale-95">Respond</button>
+                    )}
+                    {a.status === 'responding' && (
+                      <button onClick={() => handleAlertAction(a._id, 'resolved')} className="px-3 sm:px-4 py-1.5 sm:py-2 bg-success text-success-foreground rounded-lg text-xs font-semibold hover:opacity-90 transition-all active:scale-95">Resolve</button>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             ))}

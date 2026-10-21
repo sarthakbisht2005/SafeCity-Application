@@ -83,6 +83,26 @@ interface DBEmergencyServiceRow {
   distance?: number | null;
 }
 
+interface DBProfileRow {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  avatar_url?: string | null;
+  created_at: string;
+}
+
+interface DBRoleRow {
+  user_id: string;
+  role: string;
+}
+
+interface DBAccessControlRow {
+  user_id: string;
+  status: string;
+  blocked_until?: string | null;
+}
+
 // Helper to map DB row to CrimeReport
 function mapReport(r: DBReportRow): CrimeReport {
   return {
@@ -409,14 +429,13 @@ export const api = {
     if (error) throw new Error(error.message);
   },
 
-  // =================== NOTIFICATIONS ===================
   getNotifications: async (): Promise<Notification[]> => {
     const { data, error } = await supabase
       .from('notifications')
       .select('*')
       .order('created_at', { ascending: false });
     if (error) throw new Error(error.message);
-    return (data || []).map(mapNotification);
+    return ((data || []) as DBNotificationRow[]).map(mapNotification);
   },
 
   markNotificationRead: async (id: string): Promise<void> => {
@@ -438,8 +457,8 @@ export const api = {
     if (reportsResult.error) throw new Error(reportsResult.error.message);
     if (alertsResult.error) throw new Error(alertsResult.error.message);
 
-    const allReports = reportsResult.data || [];
-    const allAlerts = alertsResult.data || [];
+    const allReports = (reportsResult.data || []) as Array<{ type: string; status: string; severity?: string | null; created_at: string }>;
+    const allAlerts = (alertsResult.data || []) as Array<{ status: string }>;
 
     const totalReports = allReports.length;
     const activeAlerts = allAlerts.filter(a => a.status === 'active').length;
@@ -484,11 +503,11 @@ export const api = {
       console.warn('Citizen access controls table query notice:', accessResult.error.message);
     }
 
-    const profiles = profilesResult.data || [];
-    const roles = rolesResult.data || [];
-    const accessControls = accessResult.data || [];
+    const profiles = (profilesResult.data || []) as DBProfileRow[];
+    const roles = (rolesResult.data || []) as DBRoleRow[];
+    const accessControls = (accessResult.data || []) as DBAccessControlRow[];
 
-    return (profiles || []).map(p => {
+    return profiles.map(p => {
       const userRoles = roles.filter(r => r.user_id === p.id);
       const isAdmin = userRoles.some(r => r.role === 'admin');
       const access = accessControls.find(entry => entry.user_id === p.id);

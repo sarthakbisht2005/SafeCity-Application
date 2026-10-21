@@ -150,12 +150,12 @@ export default function NotificationsPage() {
   ).length;
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-8 pb-28 sm:pb-12">
       <div className="container mx-auto px-4 max-w-3xl">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-3">
               <span>Notifications</span>
               {unreadCount > 0 && (
                 <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emergency text-emergency-foreground">

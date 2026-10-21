@@ -124,11 +124,11 @@ export default function ReportCrimePage() {
   }
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-8 pb-28 sm:pb-12">
       <div className="container mx-auto px-4 max-w-2xl">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-3xl font-bold mb-2">Report a Crime</h1>
-          <p className="text-muted-foreground mb-8">Help keep your community safe</p>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Report a Crime</h1>
+          <p className="text-muted-foreground text-sm sm:text-base mb-6 sm:mb-8">Help keep your community safe</p>
 
           {isBlocked && (
             <div role="alert" className="mb-6 p-4 rounded-xl border border-emergency/30 bg-emergency/10 text-emergency text-sm">
@@ -142,14 +142,14 @@ export default function ReportCrimePage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
             {/* Crime Type */}
-            <div className="glass-card rounded-xl p-5">
+            <div className="glass-card rounded-xl p-4 sm:p-5">
               <label className="text-sm font-semibold mb-3 block">Crime Type</label>
               <div className="flex flex-wrap gap-2">
                 {crimeTypes.map(t => (
                   <button key={t.value} type="button" onClick={() => setForm(f => ({ ...f, type: t.value }))}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${form.type === t.value ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-accent'}`}>
+                    className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-colors ${form.type === t.value ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-accent'}`}>
                     {t.label}
                   </button>
                 ))}
@@ -157,12 +157,12 @@ export default function ReportCrimePage() {
             </div>
 
             {/* Severity */}
-            <div className="glass-card rounded-xl p-5">
+            <div className="glass-card rounded-xl p-4 sm:p-5">
               <label className="text-sm font-semibold mb-3 block">Severity</label>
               <div className="flex gap-2">
                 {severities.map(s => (
                   <button key={s.value} type="button" onClick={() => setForm(f => ({ ...f, severity: s.value }))}
-                    className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium border transition-all ${form.severity === s.value ? s.color + ' border' : 'border-border hover:bg-accent'}`}>
+                    className={`flex-1 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium border transition-all text-center ${form.severity === s.value ? s.color + ' border' : 'border-border hover:bg-accent'}`}>
                     {s.label}
                   </button>
                 ))}
