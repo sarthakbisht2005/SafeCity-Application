@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Shield, Mail, Lock, User, Phone as PhoneIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { getPhoneAuthErrorMessage, normalizePhoneNumber } from '@/lib/phone';
+import { formatOtpErrorMessage, getPhoneAuthErrorMessage, normalizePhoneNumber } from '@/lib/phone';
 import { toast } from 'sonner';
 
 type SignupMode = 'form' | 'phone';
@@ -99,7 +99,8 @@ export default function RegisterPage() {
       toast.success('Welcome to MySafeCity!');
       navigate('/');
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Invalid OTP');
+      const msg = err instanceof Error ? err.message : 'Invalid OTP';
+      toast.error(formatOtpErrorMessage(msg));
     } finally {
       setLoading(false);
     }
@@ -159,16 +160,16 @@ export default function RegisterPage() {
           {mode === 'phone' && !otpSent && (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-1.5 block">Full Name</label>
+                <label className="text-sm font-medium mb-1.5 block">FULL NAME</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input type="text" value={phoneName} onChange={e => setPhoneName(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:ring-2 focus:ring-primary/30 outline-none"
-                    placeholder="Your full name" autoComplete="name" required />
+                    placeholder="Sarthak Bisht" autoComplete="name" required />
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium mb-1.5 block">Phone Number</label>
+                <label className="text-sm font-medium mb-1.5 block">PHONE NO.</label>
                 <div className="relative">
                   <PhoneIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
@@ -206,10 +207,10 @@ export default function RegisterPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {(
                 [
-                  { key: 'name', label: 'Full Name', icon: User, type: 'text', placeholder: 'Sarthak Bisht', required: true },
-                  { key: 'email', label: 'Email', icon: Mail, type: 'email', placeholder: 'sarthak@mysafecity.in', required: true },
-                  { key: 'phone', label: 'Phone (optional)', icon: PhoneIcon, type: 'tel', placeholder: '+91 9876543210', required: false },
-                  { key: 'password', label: 'Password', icon: Lock, type: 'password', placeholder: '••••••••', required: true },
+                  { key: 'name', label: 'FULL NAME', icon: User, type: 'text', placeholder: 'Sarthak Bisht', required: true },
+                  { key: 'email', label: 'EMAIL', icon: Mail, type: 'email', placeholder: 'sarthak@mysafecity.in', required: true },
+                  { key: 'phone', label: 'PHONE NO.                (optional for emergency alerts)', icon: PhoneIcon, type: 'tel', placeholder: '+91 9876543210', required: false },
+                  { key: 'password', label: 'PASSWORD', icon: Lock, type: 'password', placeholder: '••••••••', required: true },
                 ] as const
               ).map(field => (
                 <div key={field.key}>

@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Shield, Mail, Lock, Eye, EyeOff, Phone } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { getPhoneAuthErrorMessage, normalizePhoneNumber } from '@/lib/phone';
+import { formatOtpErrorMessage, getPhoneAuthErrorMessage, normalizePhoneNumber } from '@/lib/phone';
 import { toast } from 'sonner';
 
 type LoginMode = 'password' | 'otp';
@@ -17,10 +17,16 @@ function isPhoneLike(val: string): boolean {
 }
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mode, setMode] = useState<LoginMode>('password');
+
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   // Password Login state
   const [identifier, setIdentifier] = useState('');
@@ -77,7 +83,10 @@ export default function LoginPage() {
         const email = raw.toLowerCase();
         const { error } = await supabase.auth.signInWithOtp({
           email,
-          options: { shouldCreateUser: false },
+          options: {
+            shouldCreateUser: false,
+            emailRedirectTo: window.location.origin,
+          },
         });
         if (error) throw error;
         setOtpTarget(email);
@@ -107,7 +116,7 @@ export default function LoginPage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : (err as { message?: string })?.message;
       if (raw.includes('@')) {
-        toast.error(msg || 'Failed to send OTP to email. Check if your account exists.');
+        toast.error(formatOtpErrorMessage(msg) || 'Failed to send OTP to email. Check if your account exists.');
       } else {
         toast.error(getPhoneAuthErrorMessage(msg));
       }
@@ -127,12 +136,26 @@ export default function LoginPage() {
     setLoading(true);
     try {
       if (otpType === 'email') {
-        const { error } = await supabase.auth.verifyOtp({
+        let verifyErr = null;
+        const resEmail = await supabase.auth.verifyOtp({
           email: otpTarget,
           token: cleanOtp,
           type: 'email',
         });
-        if (error) throw error;
+        if (resEmail.error) {
+          verifyErr = resEmail.error;
+          const resMagic = await supabase.auth.verifyOtp({
+            email: otpTarget,
+            token: cleanOtp,
+            type: 'magiclink',
+          });
+          if (!resMagic.error) {
+            verifyErr = null;
+          } else {
+            verifyErr = resMagic.error;
+          }
+        }
+        if (verifyErr) throw verifyErr;
       } else {
         const { error } = await supabase.auth.verifyOtp({
           phone: otpTarget,
@@ -145,7 +168,8 @@ export default function LoginPage() {
       toast.success('Welcome back!');
       navigate('/');
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Invalid or expired OTP');
+      const msg = err instanceof Error ? err.message : 'Invalid or expired OTP';
+      toast.error(formatOtpErrorMessage(msg));
     } finally {
       setLoading(false);
     }
@@ -225,7 +249,7 @@ export default function LoginPage() {
           {mode === 'otp' && !otpSent && (
             <form onSubmit={handleSendOtp} className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-1.5 block">Email or Phone No</label>
+                <label className="text-sm font-medium mb-1.5 block">EMAIL OR PHONE NO.</label>
                 <div className="relative">
                   {otpIdentifier.includes('@') ? (
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -237,7 +261,7 @@ export default function LoginPage() {
                     value={otpIdentifier}
                     onChange={e => setOtpIdentifier(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:ring-2 focus:ring-primary/30 outline-none"
-                    placeholder="sarthak@mysafecity.in or +91 9876543210"
+                    placeholder="citizen@safecity.in"
                     required
                   />
                 </div>
@@ -255,9 +279,16 @@ export default function LoginPage() {
           {/* OTP Verification Form */}
           {mode === 'otp' && otpSent && (
             <form onSubmit={handleVerifyOtp} className="space-y-4">
-              <p className="text-sm text-muted-foreground text-center">
-                OTP sent to <span className="font-semibold text-foreground">{otpTarget}</span>
-              </p>
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  OTP sent to <span className="font-semibold text-foreground">{otpTarget}</span>
+                </p>
+                {otpType === 'email' && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Enter the 6-digit code from your email, or click the sign-in button in your email.
+                  </p>
+                )}
+              </div>
               <div>
                 <label className="text-sm font-medium mb-1.5 block">Enter OTP</label>
                 <input
@@ -305,7 +336,7 @@ export default function LoginPage() {
           {mode === 'password' && (
             <form onSubmit={handlePasswordLogin} className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-1.5 block">Email or Phone No</label>
+                <label className="text-sm font-medium mb-1.5 block">EMAIL OR PHONE NO</label>
                 <div className="relative">
                   {isPhoneLike(identifier) ? (
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -317,14 +348,14 @@ export default function LoginPage() {
                     value={identifier}
                     onChange={e => setIdentifier(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:ring-2 focus:ring-primary/30 outline-none"
-                    placeholder="safecity.com or +91 9343579549"
+                    placeholder="citizen@safecity.in"
                     autoComplete="username"
                     required
                   />
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium mb-1.5 block">Password</label>
+                <label className="text-sm font-medium mb-1.5 block">PASSWORD</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
