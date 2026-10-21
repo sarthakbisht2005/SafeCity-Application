@@ -622,3 +622,38 @@ VALUES
     78.0700,
     now() - interval '1 day'
   );
+
+-- ------------------------------------------------------------------------------
+-- 7. HELPER RPC FOR DUAL EMAIL / PHONE AUTHENTICATION
+-- ------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.get_email_by_phone(p_phone TEXT)
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_email TEXT;
+  v_clean_phone TEXT;
+BEGIN
+  IF p_phone IS NULL OR trim(p_phone) = '' THEN
+    RETURN NULL;
+  END IF;
+
+  v_clean_phone := regexp_replace(p_phone, '[^0-9+]', '', 'g');
+
+  SELECT email INTO v_email
+  FROM public.profiles
+  WHERE phone IS NOT NULL
+    AND (
+      phone = p_phone
+      OR regexp_replace(phone, '[^0-9+]', '', 'g') = v_clean_phone
+      OR regexp_replace(phone, '[^0-9]', '', 'g') = regexp_replace(v_clean_phone, '[^0-9]', '', 'g')
+    )
+  ORDER BY created_at ASC
+  LIMIT 1;
+
+  RETURN v_email;
+END;
+$$;
+GRANT EXECUTE ON FUNCTION public.get_email_by_phone(TEXT) TO anon, authenticated;

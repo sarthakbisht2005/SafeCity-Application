@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Session } from '@supabase/supabase-js';
 
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
   register: (data: { name: string; email: string; password: string; phone?: string }) => Promise<boolean>;
   logout: () => void;
   refreshUser: () => Promise<void>;
@@ -93,9 +93,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw new Error(error.message);
+  const login = useCallback(async (identifier: string, password: string) => {
+    const raw = identifier.trim();
+    if (!raw) throw new Error('Email or phone number is required');
+
+    // Case 1: Email login
+    if (raw.includes('@')) {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: raw.toLowerCase(),
+        password,
+      });
+      if (error) throw new Error(error.message);
+      return;
+    }
+
+    // Case 2: Phone login
+    const cleanDigits = raw.replace(/[\s().-]/g, '');
+    const normalized = cleanDigits.startsWith('+') ? cleanDigits : `+91${cleanDigits}`;
+
+    // A. Attempt to resolve email for this phone via get_email_by_phone RPC
+    try {
+      const { data: emailData, error: rpcError } = await supabase.rpc('get_email_by_phone', {
+        p_phone: normalized,
+      });
+      if (!rpcError && emailData && typeof emailData === 'string' && emailData.includes('@')) {
+        const { error: emailSignInErr } = await supabase.auth.signInWithPassword({
+          email: emailData.toLowerCase(),
+          password,
+        });
+        if (!emailSignInErr) return;
+      }
+    } catch {
+      // Proceed to direct phone sign in attempt
+    }
+
+    // B. Direct phone sign in (for native phone accounts)
+    const { error: phoneErr } = await supabase.auth.signInWithPassword({
+      phone: normalized,
+      password,
+    });
+    if (!phoneErr) return;
+
+    if (cleanDigits !== normalized) {
+      const { error: rawPhoneErr } = await supabase.auth.signInWithPassword({
+        phone: cleanDigits,
+        password,
+      });
+      if (!rawPhoneErr) return;
+    }
+
+    throw new Error(phoneErr.message || 'Invalid email/phone or password');
   }, []);
 
   const register = useCallback(async (data: { name: string; email: string; password: string; phone?: string }) => {

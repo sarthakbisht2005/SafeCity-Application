@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -8,54 +7,110 @@ import { supabase } from '@/integrations/supabase/client';
 import { getPhoneAuthErrorMessage, normalizePhoneNumber } from '@/lib/phone';
 import { toast } from 'sonner';
 
-type LoginMode = 'email' | 'phone';
+type LoginMode = 'password' | 'otp';
+
+function isPhoneLike(val: string): boolean {
+  const trimmed = val.trim();
+  if (!trimmed) return false;
+  if (trimmed.includes('@')) return false;
+  return /^[+]?[\d\s().-]+$/.test(trimmed);
+}
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [mode, setMode] = useState<LoginMode>('email');
-  const [email, setEmail] = useState('');
+  const [mode, setMode] = useState<LoginMode>('password');
+
+  // Password Login state
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  const [phone, setPhone] = useState('');
+  const [showPw, setShowPw] = useState(false);
+
+  // OTP Login state
+  const [otpIdentifier, setOtpIdentifier] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
-  const [showPw, setShowPw] = useState(false);
+  const [otpTarget, setOtpTarget] = useState('');
+  const [otpType, setOtpType] = useState<'email' | 'sms'>('sms');
+
+  // Loading states
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    const raw = identifier.trim();
+    if (!raw) {
+      toast.error('Please enter your email or phone number');
+      return;
+    }
+    if (!password) {
+      toast.error('Please enter your password');
+      return;
+    }
+
     setLoading(true);
     try {
-      await login(email, password);
+      await login(raw, password);
       toast.success('Welcome back!');
       navigate('/');
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Invalid email or password');
+      toast.error(err instanceof Error ? err.message : 'Invalid credentials. Please verify your email/phone and password.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSendOtp = async () => {
-    const phoneNumber = normalizePhoneNumber(phone);
-    if (!phoneNumber) {
-      toast.error('Enter a valid international phone number, including its country code');
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const raw = otpIdentifier.trim();
+    if (!raw) {
+      toast.error('Please enter your email or phone number');
       return;
     }
+
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: phoneNumber,
-        options: { shouldCreateUser: false },
-      });
-      if (error) throw error;
-      setOtpSent(true);
-      toast.success('OTP sent to your phone!');
+      if (raw.includes('@')) {
+        // Email OTP
+        const email = raw.toLowerCase();
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: { shouldCreateUser: false },
+        });
+        if (error) throw error;
+        setOtpTarget(email);
+        setOtpType('email');
+        setOtpSent(true);
+        toast.success(`OTP sent to ${email}!`);
+      } else {
+        // Phone OTP
+        const cleanDigits = raw.replace(/[\s().-]/g, '');
+        const normalized = normalizePhoneNumber(raw) || (cleanDigits.startsWith('+') ? cleanDigits : `+91${cleanDigits}`);
+        if (!/^\+[1-9]\d{7,14}$/.test(normalized)) {
+          toast.error('Enter a valid phone number, including country code (e.g. +91 9876543210)');
+          setLoading(false);
+          return;
+        }
+
+        const { error } = await supabase.auth.signInWithOtp({
+          phone: normalized,
+          options: { shouldCreateUser: false },
+        });
+        if (error) throw error;
+        setOtpTarget(normalized);
+        setOtpType('sms');
+        setOtpSent(true);
+        toast.success(`OTP sent to ${normalized}!`);
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : (err as { message?: string })?.message;
-      toast.error(getPhoneAuthErrorMessage(msg));
+      if (raw.includes('@')) {
+        toast.error(msg || 'Failed to send OTP to email. Check if your account exists.');
+      } else {
+        toast.error(getPhoneAuthErrorMessage(msg));
+      }
     } finally {
       setLoading(false);
     }
@@ -63,24 +118,34 @@ export default function LoginPage() {
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const phoneNumber = normalizePhoneNumber(phone);
-    if (!phoneNumber) {
-      toast.error('Enter a valid international phone number, including its country code');
+    const cleanOtp = otp.trim();
+    if (!cleanOtp) {
+      toast.error('Please enter the 6-digit OTP');
       return;
     }
+
     setLoading(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        phone: phoneNumber,
-        token: otp,
-        type: 'sms',
-      });
-      if (error) throw error;
+      if (otpType === 'email') {
+        const { error } = await supabase.auth.verifyOtp({
+          email: otpTarget,
+          token: cleanOtp,
+          type: 'email',
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.auth.verifyOtp({
+          phone: otpTarget,
+          token: cleanOtp,
+          type: 'sms',
+        });
+        if (error) throw error;
+      }
 
-      toast.success('Welcome!');
+      toast.success('Welcome back!');
       navigate('/');
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Invalid OTP');
+      toast.error(err instanceof Error ? err.message : 'Invalid or expired OTP');
     } finally {
       setLoading(false);
     }
@@ -120,7 +185,7 @@ export default function LoginPage() {
           <button
             onClick={handleGoogleLogin}
             disabled={googleLoading}
-            className="w-full flex items-center justify-center gap-3 py-2.5 rounded-lg border border-input bg-background text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50 mb-4"
+            className="w-full flex items-center justify-center gap-3 py-2.5 rounded-lg border border-input bg-background text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50 mb-4 min-h-[44px]"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -134,89 +199,170 @@ export default function LoginPage() {
           {/* Mode tabs */}
           <div className="flex rounded-xl border border-input overflow-hidden mb-6 p-0.5 bg-secondary/50">
             <button
-              onClick={() => setMode('email')}
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${mode === 'email' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+              type="button"
+              onClick={() => setMode('password')}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors min-h-[40px] ${
+                mode === 'password' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
-              <Mail className="w-4 h-4 inline mr-1.5" />Password Login
+              <Mail className="w-4 h-4 inline mr-1.5" />
+              Password Login
             </button>
             <button
-              onClick={() => { setMode('phone'); setOtpSent(false); }}
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${mode === 'phone' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+              type="button"
+              onClick={() => {
+                setMode('otp');
+                setOtpSent(false);
+              }}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors min-h-[40px] ${
+                mode === 'otp' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
-              <Phone className="w-4 h-4 inline mr-1.5" />Phone OTP
+              <Phone className="w-4 h-4 inline mr-1.5" />
+              OTP Login
             </button>
           </div>
 
-          {mode === 'phone' && !otpSent && (
-            <div className="space-y-4">
+          {/* OTP Login Form */}
+          {mode === 'otp' && !otpSent && (
+            <form onSubmit={handleSendOtp} className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-1.5 block">Phone Number</label>
+                <label className="text-sm font-medium mb-1.5 block">Email or Phone No</label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                  {otpIdentifier.includes('@') ? (
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  )}
+                  <input
+                    type="text"
+                    value={otpIdentifier}
+                    onChange={e => setOtpIdentifier(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:ring-2 focus:ring-primary/30 outline-none"
-                    placeholder="+91 9876543210" required />
+                    placeholder="sarthak@mail.com or +91 9876543210"
+                    required
+                  />
                 </div>
               </div>
-              <button onClick={handleSendOtp} disabled={loading}
-                className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 min-h-[44px]"
+              >
                 {loading ? 'Sending OTP...' : 'Send OTP'}
-              </button>
-            </div>
-          )}
-
-          {mode === 'phone' && otpSent && (
-            <form onSubmit={handleVerifyOtp} className="space-y-4">
-              <p className="text-sm text-muted-foreground text-center">OTP sent to <span className="font-medium text-foreground">{phone}</span></p>
-              <div>
-                <label className="text-sm font-medium mb-1.5 block">Enter OTP</label>
-                <input type="text" value={otp} onChange={e => setOtp(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-sm text-center tracking-[0.5em] focus:ring-2 focus:ring-primary/30 outline-none"
-                  placeholder="000000" maxLength={6} required />
-              </div>
-              <button type="submit" disabled={loading}
-                className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50">
-                {loading ? 'Verifying...' : 'Verify & Sign In'}
-              </button>
-              <button type="button" onClick={() => setOtpSent(false)} className="w-full text-sm text-muted-foreground hover:text-foreground">
-                Change number
               </button>
             </form>
           )}
 
-          {mode === 'email' && (
-            <form onSubmit={handleEmailLogin} className="space-y-5">
+          {/* OTP Verification Form */}
+          {mode === 'otp' && otpSent && (
+            <form onSubmit={handleVerifyOtp} className="space-y-4">
+              <p className="text-sm text-muted-foreground text-center">
+                OTP sent to <span className="font-semibold text-foreground">{otpTarget}</span>
+              </p>
               <div>
-                <label className="text-sm font-medium mb-1.5 block">Email</label>
+                <label className="text-sm font-medium mb-1.5 block">Enter OTP</label>
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-sm text-center tracking-[0.5em] font-mono focus:ring-2 focus:ring-primary/30 outline-none"
+                  placeholder="000000"
+                  maxLength={6}
+                  autoFocus
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 min-h-[44px]"
+              >
+                {loading ? 'Verifying...' : 'Verify & Sign In'}
+              </button>
+              <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleSendOtp()}
+                  disabled={loading}
+                  className="hover:text-primary transition-colors disabled:opacity-50"
+                >
+                  Resend OTP
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOtpSent(false);
+                    setOtp('');
+                  }}
+                  className="hover:text-foreground transition-colors"
+                >
+                  Change email or phone
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Password Login Form */}
+          {mode === 'password' && (
+            <form onSubmit={handlePasswordLogin} className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Email or Phone No</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  {isPhoneLike(identifier) ? (
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  )}
+                  <input
+                    type="text"
+                    value={identifier}
+                    onChange={e => setIdentifier(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:ring-2 focus:ring-primary/30 outline-none"
-                    placeholder="admin@mysafecity.com" required />
+                    placeholder="admin@mysafecity.com or +91 9343579549"
+                    autoComplete="username"
+                    required
+                  />
                 </div>
               </div>
               <div>
                 <label className="text-sm font-medium mb-1.5 block">Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+                  <input
+                    type={showPw ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
                     className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-input bg-background text-sm focus:ring-2 focus:ring-primary/30 outline-none"
-                    placeholder="••••••••" required />
-                  <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw(!showPw)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                    aria-label={showPw ? 'Hide password' : 'Show password'}
+                  >
                     {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
-              <button type="submit" disabled={loading}
-                className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50">
-                {loading ? 'Signing in...' : 'Sign In'}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 min-h-[44px]"
+              >
+                {loading ? 'Logging in...' : 'Login'}
               </button>
             </form>
           )}
 
           <p className="text-center text-sm text-muted-foreground mt-6">
             Don't have an account?{' '}
-            <Link to="/register" className="text-primary font-medium hover:underline">Sign up</Link>
+            <Link to="/register" className="text-primary font-medium hover:underline">
+              Sign up
+            </Link>
           </p>
         </div>
       </motion.div>
