@@ -176,7 +176,7 @@ export default function LoginPage() {
             <p className="text-muted-foreground text-sm mt-1">Sign in to MySafeCity</p>
             {location.state?.emailVerificationRequired && (
               <p role="status" className="mt-3 rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
-                Your account was created. Verify your email, then sign in.
+                Your account was created. Verify your email, then login.
               </p>
             )}
           </div>
@@ -201,12 +201,11 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setMode('password')}
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors min-h-[40px] ${
-                mode === 'password' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-              }`}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors min-h-[40px] ${mode === 'password' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
             >
               <Mail className="w-4 h-4 inline mr-1.5" />
-              Password Login
+              Password
             </button>
             <button
               type="button"
@@ -214,12 +213,11 @@ export default function LoginPage() {
                 setMode('otp');
                 setOtpSent(false);
               }}
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors min-h-[40px] ${
-                mode === 'otp' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-              }`}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors min-h-[40px] ${mode === 'otp' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
             >
               <Phone className="w-4 h-4 inline mr-1.5" />
-              OTP Login
+              OTP
             </button>
           </div>
 
@@ -239,7 +237,7 @@ export default function LoginPage() {
                     value={otpIdentifier}
                     onChange={e => setOtpIdentifier(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:ring-2 focus:ring-primary/30 outline-none"
-                    placeholder="sarthak@mail.com or +91 9876543210"
+                    placeholder="sarthak@mysafecity.in or +91 9876543210"
                     required
                   />
                 </div>
@@ -319,7 +317,7 @@ export default function LoginPage() {
                     value={identifier}
                     onChange={e => setIdentifier(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:ring-2 focus:ring-primary/30 outline-none"
-                    placeholder="admin@mysafecity.com or +91 9343579549"
+                    placeholder="safecity.com or +91 9343579549"
                     autoComplete="username"
                     required
                   />

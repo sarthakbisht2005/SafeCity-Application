@@ -49,11 +49,10 @@ export default function Navbar() {
             <Link
               key={item.path}
               to={item.path}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                location.pathname === item.path
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${location.pathname === item.path
                   ? 'bg-primary/10 text-primary'
                   : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-              }`}
+                }`}
             >
               {item.label}
             </Link>
@@ -89,9 +88,6 @@ export default function Navbar() {
             </div>
           ) : (
             <div className="hidden md:flex items-center gap-2">
-              <Link to="/login" className="px-3.5 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
-                Sign In
-              </Link>
               <Link to="/register" className="px-3.5 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity shadow-sm">
                 Sign Up
               </Link>
@@ -139,11 +135,10 @@ export default function Navbar() {
                   key={item.path}
                   to={item.path}
                   onClick={() => setMobileOpen(false)}
-                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-between ${
-                    location.pathname === item.path
+                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-between ${location.pathname === item.path
                       ? 'bg-primary/10 text-primary font-semibold'
                       : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                  }`}
+                    }`}
                 >
                   <span>{item.label}</span>
                 </Link>
